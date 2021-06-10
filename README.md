@@ -6,7 +6,6 @@ Just a little project to waste some time.
 ```bash
 pip3 install -r requirements.txt
 ./crawl.py
-open data/index.html
 ```
 
 ## Usage

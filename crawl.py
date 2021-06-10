@@ -4,7 +4,7 @@ from attrdict import AttrDict
 import mechanicalsoup
 import json
 
-JSON_OUT = 'data/results.json'
+JSON_OUT = 'var/results.json'
 
 def main():
     args = get_args()
@@ -38,14 +38,6 @@ def get_args():
     args.url = args.url % (args.options + '/%s')
     return args
 
-
-def render(ads):
-    from jinja2 import Template
-    template = Template(open('index.html.tpl').read())
-    with open('data/index.html', 'w') as f:
-        f.write(template.render(ads=ads))
-
-
 def get_results(browser, url):
     page = browser.get(url)
     # Dirty
@@ -57,6 +49,7 @@ def get_results(browser, url):
         out.title = el.select('.text-module-begin a')[0].text.strip()
         out.desc = el.select('.aditem-main p')[0].text.strip()
         out.price = el.select('.aditem-main--middle--price')[0].text.strip()
+        out.location = el.select('.aditem-main--top--left')[0].text.strip()
         img = el.select('[data-imgsrc]')
         out.img = img[0].attrs['data-imgsrc'] if len(img) else None
         results.append(out)
