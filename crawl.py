@@ -59,6 +59,9 @@ def get_results(page, domain):
         out.desc = el.select('.aditem-main p')[0].text.strip()
         out.price = el.select('.aditem-main--middle--price')[0].text.strip()
         out.location = el.select('.aditem-main--top--left')[0].text.strip()
+        out.date = el.select('.aditem-main--top--right')[0].text.strip()
+        out.tags = list(map(lambda innerEl: innerEl.text.strip(),
+                            el.select('.simpletag')))
         img = el.select('[data-imgsrc]')
         out.img = img[0].attrs['data-imgsrc'] if len(img) else None
         results.append(out)
