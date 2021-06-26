@@ -3,6 +3,7 @@
 from attrdict import AttrDict
 import mechanicalsoup
 import json
+import re
 from random import randint
 from time import sleep
 
@@ -79,6 +80,9 @@ def get_results(page, domain, browser, details):
             for line_break in descComplete.findAll('br'):
                 line_break.replaceWith("\n")
             out.descComplete = descComplete.get_text().strip()
+            out.checktags = list(map(lambda innerEl: innerEl.text.strip(),
+                                     subpage.soup.select('li.checktag')))
+            out.contact = get_contact(subpage, domain)
         results.append(out)
     return results
 
@@ -95,6 +99,27 @@ def get_details(subpage):
             0].strip()
         details.append(detail)
     return details
+
+
+def get_contact(subpage, domain):
+    contact = AttrDict()
+    contact.name = subpage.soup.select(
+        '#viewad-contact .text-body-regular-strong')[0].text.strip()
+    try:
+        contact.link = domain + subpage.soup.select(
+            '#viewad-contact a')[0].attrs['href']
+    except:
+        pass
+    try:
+        contact.phone = subpage.soup.select(
+            '#viewad-contact-phone')[0].text.strip()
+    except:
+        pass
+    contact.private = subpage.soup.select(
+        '#viewad-contact')[0].text.find('Privater Nutzer') != -1
+    contact.registered = re.search(r'Aktiv seit (\d\d\.\d\d\.\d\d\d\d)', subpage.soup.select(
+        '#viewad-contact')[0].text).group(1)
+    return contact
 
 
 if __name__ == '__main__':
