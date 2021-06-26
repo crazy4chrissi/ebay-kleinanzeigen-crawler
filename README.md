@@ -14,7 +14,7 @@ pip3 install -r requirements.txt
 ```
 usage: crawl.py [-h] [--url URL] [--page-start PAGE_START]
                 [--page-end PAGE_END] [--json-out JSON_OUT]
-                [--options OPTIONS]
+                [--options OPTIONS] [--verbose] [--details]
 
 Crawl ebay kleinanzeigen
 
@@ -31,4 +31,6 @@ optional arguments:
   --options OPTIONS     Options for kleinanzeigen. Get from the site (example:
                         preis:0:20/, default:)
   --verbose             Print verbose output before result JSON
+  --details             Crawl the details page of each ad in order to obtain
+                        more details. Requires a lot more requests.
 ```

@@ -3,6 +3,8 @@
 from attrdict import AttrDict
 import mechanicalsoup
 import json
+from random import randint
+from time import sleep
 
 
 def main():
@@ -20,9 +22,10 @@ def main():
         if args.verbose:
             print(
                 "\tCrawling page: {:2}/{:2} ({})\n\n".format(page_num, args.page_end, url))
+        sleep(randint(100, 3000)/1000)
         page = browser.get(url)
         domain = '/'.join(url.split('/')[0:3])     # Dirty
-        results += get_results(page, domain)
+        results += get_results(page, domain, browser, args.details)
         if not page.soup.select('.pagination-next'):
             if args.verbose:
                 print(
@@ -44,13 +47,16 @@ def get_args():
                         help='The page number to end at (may end before if less results found)')
     parser.add_argument('--options', default='',
                         help='Options for kleinanzeigen. Get from the site. Example: "--options preis:0:20"')
-    parser.add_argument('--verbose', default=False, action='store_true')
+    parser.add_argument('--verbose', default=False, action='store_true',
+                        help='Print verbose output before result JSON')
+    parser.add_argument('--details', default=False, action='store_true',
+                        help='Crawl the details page of each ad in order to obtain more details. Requires a lot more requests.')
     args = parser.parse_args()
     args.url = args.url % (args.options + '/%s')
     return args
 
 
-def get_results(page, domain):
+def get_results(page, domain, browser, details):
     results = []
     for el in page.soup.select('article.aditem'):
         out = AttrDict()
@@ -64,8 +70,31 @@ def get_results(page, domain):
                             el.select('.simpletag')))
         img = el.select('[data-imgsrc]')
         out.img = img[0].attrs['data-imgsrc'] if len(img) else None
+        if details:
+            sleep(randint(100, 3000)/1000)
+            subpage = browser.get(out.link)
+            out.details = get_details(subpage)
+            descComplete = subpage.soup.select(
+                '#viewad-description-text')[0]
+            for line_break in descComplete.findAll('br'):
+                line_break.replaceWith("\n")
+            out.descComplete = descComplete.get_text().strip()
         results.append(out)
     return results
+
+
+def get_details(subpage):
+    details = []
+    for detailElement in subpage.soup.select('li.addetailslist--detail'):
+        if not detailElement.select('.addetailslist--detail--value'):
+            continue
+        detail = AttrDict()
+        detail.value = detailElement.select(
+            '.addetailslist--detail--value')[0].text.strip()
+        detail.description = detailElement.text.strip().partition('\n')[
+            0].strip()
+        details.append(detail)
+    return details
 
 
 if __name__ == '__main__':
