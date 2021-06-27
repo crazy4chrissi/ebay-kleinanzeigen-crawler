@@ -85,6 +85,13 @@ def get_results(page, domain, browser, details):
             out.contact = get_contact(subpage, domain)
             out.images = list(map(lambda innerEl: innerEl.attrs['data-imgsrc'],
                                   subpage.soup.select('#viewad-image')))
+            out.id = re.search(r'Anzeigennr.: (\d+)', subpage.soup.select(
+                '#viewad-extra-info')[0].text).group(1)
+            try:
+                out.street = subpage.soup.select(
+                    '#street-address')[0].text.strip()
+            except:
+                pass
         results.append(out)
     return results
 
