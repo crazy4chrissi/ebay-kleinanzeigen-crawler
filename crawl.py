@@ -69,8 +69,8 @@ def get_results(page, domain, browser, details):
         out.date = el.select('.aditem-main--top--right')[0].text.strip()
         out.tags = list(map(lambda innerEl: innerEl.text.strip(),
                             el.select('.simpletag')))
-        img = el.select('[data-imgsrc]')
-        out.img = img[0].attrs['data-imgsrc'] if len(img) else None
+        thumb = el.select('[data-imgsrc]')
+        out.thumb = thumb[0].attrs['data-imgsrc'] if len(thumb) else None
         if details:
             sleep(randint(100, 3000)/1000)
             subpage = browser.get(out.link)
@@ -83,6 +83,8 @@ def get_results(page, domain, browser, details):
             out.checktags = list(map(lambda innerEl: innerEl.text.strip(),
                                      subpage.soup.select('li.checktag')))
             out.contact = get_contact(subpage, domain)
+            out.images = list(map(lambda innerEl: innerEl.attrs['data-imgsrc'],
+                                  subpage.soup.select('#viewad-image')))
         results.append(out)
     return results
 
